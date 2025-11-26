@@ -1,0 +1,13 @@
+# Development files
+.DS_Store
+*.swp
+*.tmp
+
+# User-specific files
+*.local
+
+# Backup files
+*.backup*
+
+# Planning and development
+/planning
