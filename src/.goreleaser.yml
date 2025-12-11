@@ -8,14 +8,14 @@ before:
     - go-winres make --product-version=git-tag --file-version=git-tag --arch="amd64,arm64"
 builds:
   -
-    binary: "posh-{{ .Os }}-{{ .Arch }}"
+    binary: "oh-my-mon-{{ .Os }}-{{ .Arch }}"
     no_unique_dist_dir: true
     flags:
       - -a
     ldflags:
       - -s -w
-      - -X github.com/jandedobbeleer/oh-my-posh/src/build.Version={{ .Version }}
-      - -X github.com/jandedobbeleer/oh-my-posh/src/build.Date={{ .Date }}
+      - -X github.com/isabellaherman/oh-my-mon/src/build.Version={{ .Version }}
+      - -X github.com/isabellaherman/oh-my-mon/src/build.Date={{ .Date }}
       - -extldflags "-static"
     tags:
       - netgo
@@ -43,9 +43,9 @@ builds:
       post:
         - pwsh -c "if ('{{ .Path }}'.EndsWith('.exe')) { & '{{ .Env.SIGNTOOL }}' sign /v /debug /fd SHA256 /tr 'http://timestamp.acs.microsoft.com' /td SHA256 /dlib '{{ .Env.SIGNTOOLDLIB }}' /dmdf './metadata.json' '{{ .Path }}' }"
 archives:
-  - id: oh-my-posh
+  - id: oh-my-mon
     format: binary
-    name_template: "posh-{{ .Os }}-{{ .Arch }}"
+    name_template: "oh-my-mon-{{ .Os }}-{{ .Arch }}"
 checksum:
   name_template: 'checksums.txt'
 signs:
