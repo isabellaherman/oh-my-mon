@@ -10,6 +10,6 @@
 *.backup*
 
 # Planning and development
-/planning
+/docs
 
 /.claude
