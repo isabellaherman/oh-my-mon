@@ -1,0 +1,65 @@
+name: Publish to MCP Registry
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/api/mcp/**'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish MCP Server
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC authentication
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          fetch-depth: 0  # Fetch all tags
+
+      - name: Extract version from latest git tag
+        id: version
+        run: |
+          # Get the latest git tag (without 'v' prefix)
+          VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version from git tag: $VERSION"
+
+      - name: Update server.json version
+        run: |
+          cd website/api/mcp
+          jq --arg v "${{ steps.version.outputs.version }}" '.version = $v' server.json > tmp.json && mv tmp.json server.json
+          echo "Updated server.json version to ${{ steps.version.outputs.version }}"
+          cat server.json
+
+      - name: Validate server.json
+        run: |
+          cd website/api
+          npm ci
+          cd mcp
+          node validate-server.js
+
+      - name: Install MCP Publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar -xzf -
+          chmod +x mcp-publisher
+          ./mcp-publisher --version
+
+      - name: Login to MCP Registry
+        env:
+          MCP_REGISTRY_PEM: ${{ secrets.MCP_REGISTRY_PEM }}
+        run: |
+          echo "$MCP_REGISTRY_PEM" > key.pem
+          PRIVATE_KEY=$(openssl pkey -in key.pem -noout -text | grep -A3 "priv:" | tail -n +2 | tr -d ' :\n')
+          ./mcp-publisher login dns --domain ohmyposh.dev --private-key "$PRIVATE_KEY"
+          rm -f key.pem
+
+      - name: Publish to MCP Registry
+        run: |
+          cd website/api/mcp
+          ../../../mcp-publisher publish
