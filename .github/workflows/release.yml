@@ -22,10 +22,10 @@ jobs:
       skipped: ${{ steps.changelog.outputs.skipped }}
     steps:
       - name: Checkout code 👋
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Create changelog ✍️
         id: changelog
-        uses: TriPSs/conventional-changelog-action@v5
+        uses: TriPSs/conventional-changelog-action@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-version-file: "true"
@@ -40,9 +40,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code 👋
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install Go 🗳
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.25.0'
       - name: Run GoReleaser 🚀
@@ -54,7 +54,7 @@ jobs:
           workdir: src
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: build-artifacts
           path: |
@@ -67,7 +67,7 @@ jobs:
       - changelog
       - artifacts
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           merge-multiple: true
       - name: Release 🎓
